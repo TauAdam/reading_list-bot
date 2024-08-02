@@ -2,12 +2,14 @@ package main
 
 import (
 	"flag"
+	"github.com/tauadam/reading_list-bot/clients/telegram"
 	"log"
 )
 
 func main() {
 	token := mustToken()
 
+	tgClient := telegram.New("https://api.telegram.org", token)
 }
 
 func mustToken() string {

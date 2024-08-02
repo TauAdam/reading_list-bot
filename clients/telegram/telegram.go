@@ -11,6 +11,7 @@ import (
 )
 
 const TGUpdateMethod = "getUpdates"
+const TGSendMessageMethod = "sendMessage"
 
 type Client struct {
 	host     string
@@ -45,8 +46,16 @@ func (c *Client) Updates(offset, limit int) ([]Update, error) {
 	return resp.Result, nil
 }
 
-func (c *Client) SendMessage(chatID int, text string) {
+func (c *Client) SendMessage(chatID int, text string) error {
+	queryMap := url.Values{}
+	queryMap.Add("chat_id", strconv.Itoa(chatID))
+	queryMap.Add("text", text)
 
+	_, err := c.doRequest(TGSendMessageMethod, queryMap)
+	if err != nil {
+		return utils.Wrap("could not send message", err)
+	}
+	return nil
 }
 
 func (c *Client) doRequest(method string, query url.Values) ([]byte, error) {
