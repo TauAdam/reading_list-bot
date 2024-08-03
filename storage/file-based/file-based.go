@@ -3,6 +3,7 @@ package file_based
 import (
 	"encoding/gob"
 	"errors"
+	"fmt"
 	"github.com/tauadam/reading_list-bot/lib/utils"
 	"github.com/tauadam/reading_list-bot/storage"
 	"math/rand"
@@ -74,5 +75,38 @@ func (s Storage) PickRandom(userName string) (article *storage.Article, err erro
 
 	n := rand.Intn(len(files))
 
-	//	TODO Pick selected file
+	file := files[n]
+
+	return s.decodeArticle(filepath.Join(dirPath, file.Name()))
+}
+
+func (s Storage) decodeArticle(pathToFile string) (*storage.Article, error) {
+	file, err := os.Open(pathToFile)
+	if err != nil {
+		return nil, utils.Wrap("can't open file", err)
+	}
+
+	defer func() { _ = file.Close() }()
+
+	var article storage.Article
+	if err := gob.NewDecoder(file).Decode(&article); err != nil {
+		return nil, utils.Wrap("can't decode article", err)
+	}
+
+	return &article, nil
+}
+
+func (s Storage) Remove(a *storage.Article) error {
+	fileName, err := generateFileName(a)
+	if err != nil {
+		return utils.Wrap("can't remove", err)
+	}
+
+	pathToFile := filepath.Join(s.basePath, a.UserName, fileName)
+
+	if err := os.Remove(pathToFile); err != nil {
+		return utils.Wrap(fmt.Sprintf("can't remove file %s", pathToFile), err)
+	}
+
+	return nil
 }
