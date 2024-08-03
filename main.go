@@ -2,14 +2,33 @@ package main
 
 import (
 	"flag"
-	"github.com/tauadam/reading_list-bot/clients/telegram"
+	telegramClient "github.com/tauadam/reading_list-bot/clients/telegram"
+	event_consumer "github.com/tauadam/reading_list-bot/consumer/event-consumer"
+	"github.com/tauadam/reading_list-bot/events/telegram"
+	file_based "github.com/tauadam/reading_list-bot/storage/file-based"
 	"log"
 )
 
-func main() {
-	token := mustToken()
+const (
+	telegramApiHost = "https://api.telegram.org"
+	PathToStorage   = "storage"
+	BatchSize       = 100
+)
 
-	tgClient := telegram.New("https://api.telegram.org", token)
+func main() {
+	tgClient := telegramClient.New(telegramApiHost, mustToken())
+
+	localStorage := file_based.New(PathToStorage)
+
+	eventsProcessor := telegram.New(tgClient, localStorage)
+
+	log.Printf("program running")
+
+	consumer := event_consumer.New(eventsProcessor, eventsProcessor, BatchSize)
+
+	if err := consumer.Start(); err != nil {
+		log.Fatalf("failed to start consumer: %v", err)
+	}
 }
 
 func mustToken() string {
