@@ -110,3 +110,22 @@ func (s Storage) Remove(a *storage.Article) error {
 
 	return nil
 }
+
+func (s Storage) IsExist(a *storage.Article) (bool, error) {
+	fileName, err := generateFileName(a)
+	if err != nil {
+		return false, utils.Wrap("can't check if exists", err)
+	}
+
+	pathToFile := filepath.Join(s.basePath, a.UserName, fileName)
+
+	switch _, err := os.Stat(pathToFile); {
+	case errors.Is(err, os.ErrNotExist):
+		return false, nil
+
+	case err != nil:
+		return false, utils.Wrap(fmt.Sprintf("can't check if exists %s", pathToFile), err)
+	}
+
+	return true, nil
+}
