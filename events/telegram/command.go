@@ -16,23 +16,24 @@ const (
 	StartCmd         = "/start"
 )
 
-func (p *Processor) cmdRouter(command string, chatID int, userName string) error {
-	command := strings.TrimSpace(command)
+func (p *Processor) cmdRouter(text string, chatID int, userName string) error {
+	command := strings.TrimSpace(text)
 
 	log.Printf("got new command: [%s] from %s", command, userName)
 
 	if isValidAddCmd(command) {
-		//	TODO: add new article
+		return p.handleSave(chatID, userName, command)
 	}
+
 	switch command {
 	case StartCmd:
-
+		return p.handleStart(chatID)
 	case RandomArticleCmd:
-
+		return p.handleRandom(chatID, userName)
 	case HelpCmd:
-
+		return p.handleHelp(chatID)
 	default:
-
+		return p.tg.SendMessage(chatID, msgUnknown)
 	}
 }
 
@@ -103,4 +104,12 @@ func (p *Processor) handleRandom(chatID int, userName string) (err error) {
 	}
 
 	return p.storage.Remove(article)
+}
+
+func (p *Processor) handleHelp(chatID int) error {
+	return p.tg.SendMessage(chatID, msgHelp)
+}
+
+func (p *Processor) handleStart(chatID int) error {
+	return p.tg.SendMessage(chatID, msgGreeting)
 }

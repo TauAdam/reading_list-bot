@@ -12,6 +12,7 @@ type Meta struct {
 	ChatID   int
 	UserName string
 }
+
 type Processor struct {
 	tg      *telegram.Client
 	offset  int
@@ -80,11 +81,13 @@ func fetchType(update telegram.Update) events.Type {
 	return events.Message
 }
 
+// Custom error types for events like messages
 var (
 	ErrUnknownEventType = errors.New("unknown event type")
 	ErrUnknownMetaType  = errors.New("unknown extractMeta type")
 )
 
+// Process realization that works with Telegram API, processes messages
 func (p *Processor) Process(event events.Event) error {
 	switch event.Type {
 	case events.Message:
@@ -92,7 +95,6 @@ func (p *Processor) Process(event events.Event) error {
 	default:
 		return utils.Wrap("can't process message", ErrUnknownEventType)
 	}
-
 }
 
 func (p *Processor) processMessage(event events.Event) error {
@@ -101,8 +103,14 @@ func (p *Processor) processMessage(event events.Event) error {
 		return utils.Wrap("can't extract meta info", err)
 	}
 
+	if err := p.cmdRouter(event.Text, meta.ChatID, meta.UserName); err != nil {
+		return utils.Wrap("can't execute command", err)
+	}
+
+	return nil
 }
 
+// extractMeta extracts chat id and user name from api
 func extractMeta(e events.Event) (Meta, error) {
 	res, ok := e.Meta.(Meta)
 	if !ok {
