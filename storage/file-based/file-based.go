@@ -1,10 +1,14 @@
 package file_based
 
 import (
+	"encoding/gob"
+	"errors"
 	"github.com/tauadam/reading_list-bot/lib/utils"
 	"github.com/tauadam/reading_list-bot/storage"
+	"math/rand"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 type Storage struct {
@@ -20,9 +24,9 @@ func New(basePath string) Storage {
 func (s Storage) Save(article *storage.Article) (err error) {
 	defer func() { err = utils.Wrap("can't save", err) }()
 
-	filePath := filepath.Join(s.basePath, article.UserName)
+	dirPath := filepath.Join(s.basePath, article.UserName)
 
-	if err := os.MkdirAll(filePath, 0744); err != nil {
+	if err := os.MkdirAll(dirPath, 0744); err != nil {
 		return err
 	}
 
@@ -31,9 +35,44 @@ func (s Storage) Save(article *storage.Article) (err error) {
 		return err
 	}
 
-	//	TODO write to file
+	pathToFile := filepath.Join(dirPath, fileName)
+
+	file, err := os.Create(pathToFile)
+	if err != nil {
+		return err
+	}
+	defer func() { _ = file.Close() }()
+
+	if err := gob.NewEncoder(file).Encode(article); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func generateFileName(a *storage.Article) (string, error) {
 	return a.Hash()
+}
+
+var ErrNotFound = errors.New("no saved articles")
+
+func (s Storage) PickRandom(userName string) (article *storage.Article, err error) {
+	defer func() { err = utils.Wrap("can't pick random article", err) }()
+
+	dirPath := filepath.Join(s.basePath, userName)
+
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(files) == 0 {
+		return nil, ErrNotFound
+	}
+
+	rand.Seed(time.Now().UnixNano())
+
+	n := rand.Intn(len(files))
+
+	//	TODO Pick selected file
 }
