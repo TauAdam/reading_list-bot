@@ -1,12 +1,17 @@
 package telegram
 
 import (
+	"errors"
 	"github.com/tauadam/reading_list-bot/clients/telegram"
 	"github.com/tauadam/reading_list-bot/events"
 	"github.com/tauadam/reading_list-bot/lib/utils"
 	"github.com/tauadam/reading_list-bot/storage"
 )
 
+type Meta struct {
+	ChatID   int
+	UserName string
+}
 type Processor struct {
 	tg      *telegram.Client
 	offset  int
@@ -21,20 +26,42 @@ func New(client *telegram.Client, storage storage.Storage) *Processor {
 }
 
 func (p *Processor) Fetch(limit int) ([]events.Event, error) {
-	update, err := p.tg.Updates(p.offset, limit)
+	updates, err := p.tg.Updates(p.offset, limit)
 	if err != nil {
 		return nil, utils.Wrap("can't fetch updates", err)
 	}
 
-	res := make([]events.Event, 0, len(update))
+	if len(updates) == 0 {
+		return nil, nil
+	}
 
+	res := make([]events.Event, 0, len(updates))
+
+	for _, u := range updates {
+		res = append(res, updateToEvent(u))
+	}
+
+	p.offset = updates[len(updates)-1].ID + 1
+
+	return res, nil
 }
 
 func updateToEvent(update telegram.Update) events.Event {
-	return events.Event{
-		Type: fetchType(update),
+	updateType := fetchType(update)
+
+	res := events.Event{
+		Type: updateType,
 		Text: fetchText(update),
 	}
+
+	if updateType == events.Message {
+		res.Meta = Meta{
+			ChatID:   update.Message.Chat.ID,
+			UserName: update.Message.From.UserName,
+		}
+	}
+
+	return res
 }
 
 func fetchText(update telegram.Update) string {
@@ -51,4 +78,36 @@ func fetchType(update telegram.Update) events.Type {
 	}
 
 	return events.Message
+}
+
+var (
+	ErrUnknownEventType = errors.New("unknown event type")
+	ErrUnknownMetaType  = errors.New("unknown extractMeta type")
+)
+
+func (p *Processor) Process(event events.Event) error {
+	switch event.Type {
+	case events.Message:
+		return p.processMessage(event)
+	default:
+		return utils.Wrap("can't process message", ErrUnknownEventType)
+	}
+
+}
+
+func (p *Processor) processMessage(event events.Event) error {
+	meta, err := extractMeta(event)
+	if err != nil {
+		return utils.Wrap("can't extract meta info", err)
+	}
+
+}
+
+func extractMeta(e events.Event) (Meta, error) {
+	res, ok := e.Meta.(Meta)
+	if !ok {
+		return Meta{}, utils.Wrap("can't extract meta info", ErrUnknownMetaType)
+	}
+
+	return res, nil
 }
