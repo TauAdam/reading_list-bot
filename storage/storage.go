@@ -2,10 +2,13 @@ package storage
 
 import (
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"github.com/tauadam/reading_list-bot/lib/utils"
 	"io"
 )
+
+var ErrArticleNotFound = errors.New("no saved articles")
 
 type Storage interface {
 	Save(a *Article) error

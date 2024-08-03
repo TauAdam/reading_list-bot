@@ -55,8 +55,6 @@ func generateFileName(a *storage.Article) (string, error) {
 	return a.Hash()
 }
 
-var ErrNotFound = errors.New("no saved articles")
-
 func (s Storage) PickRandom(userName string) (article *storage.Article, err error) {
 	defer func() { err = utils.Wrap("can't pick random article", err) }()
 
@@ -68,7 +66,7 @@ func (s Storage) PickRandom(userName string) (article *storage.Article, err erro
 	}
 
 	if len(files) == 0 {
-		return nil, ErrNotFound
+		return nil, storage.ErrArticleNotFound
 	}
 
 	rand.Seed(time.Now().UnixNano())

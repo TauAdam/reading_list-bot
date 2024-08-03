@@ -11,8 +11,8 @@ Caution! After that, that article will be removed`
 const msgGreeting = "Hi there!\n\n I'm reading list helper bot.\n\n" + msgHelp
 
 const (
-	msgUnknown       = "Unknown command 🤔"
-	msgNotExists     = "No articles saved 🧐"
-	msgSaved         = "Saved 👌🏾"
-	msgAlreadyExists = "This article already saved 🤗"
+	msgUnknown           = "Unknown command 🤔"
+	msgNotExists         = "No articles saved 🧐"
+	msgSuccessfullySaved = "Saved 👌🏾"
+	msgAlreadyExists     = "This article already saved 🤗"
 )

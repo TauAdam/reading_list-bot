@@ -1,6 +1,8 @@
 package telegram
 
 import (
+	"errors"
+	"github.com/tauadam/reading_list-bot/clients/telegram"
 	"github.com/tauadam/reading_list-bot/lib/utils"
 	"github.com/tauadam/reading_list-bot/storage"
 	"log"
@@ -45,8 +47,11 @@ func isUrl(text string) bool {
 	return err == nil && u.Host != ""
 }
 
-func (p *Processor) SaveArticle(chatID int, articleURL string, userName string) (err error) {
+// handleSave saves data and send user status about operation
+func (p *Processor) handleSave(chatID int, articleURL string, userName string) (err error) {
 	defer func() { err = utils.Wrap("can't execute save operation", err) }()
+
+	sendMsg := NewMessageSender(chatID, p.tg)
 
 	article := &storage.Article{
 		URL:      articleURL,
@@ -59,10 +64,43 @@ func (p *Processor) SaveArticle(chatID int, articleURL string, userName string) 
 	}
 
 	if isExists {
-		return p.tg.SendMessage(chatID, msgAlreadyExists)
+		return sendMsg(msgAlreadyExists)
 	}
 
 	if err = p.storage.Save(article); err != nil {
 		return err
 	}
+
+	if err := sendMsg(msgSuccessfullySaved); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func NewMessageSender(chatID int, tg *telegram.Client) func(string) error {
+	return func(message string) error {
+		return tg.SendMessage(chatID, message)
+	}
+}
+
+func (p *Processor) handleRandom(chatID int, userName string) (err error) {
+	defer func() { err = utils.Wrap("can't execute random operation", err) }()
+
+	sendMsg := NewMessageSender(chatID, p.tg)
+
+	article, err := p.storage.PickRandom(userName)
+	if err != nil && !errors.Is(err, storage.ErrArticleNotFound) {
+		return err
+	}
+
+	if errors.Is(err, storage.ErrArticleNotFound) {
+		return sendMsg(msgNotExists)
+	}
+
+	if err = sendMsg(article.URL); err != nil {
+		return err
+	}
+
+	return p.storage.Remove(article)
 }
