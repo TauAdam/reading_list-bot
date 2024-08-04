@@ -25,6 +25,18 @@ func New(path string) (*Storage, error) {
 	return &Storage{db: db}, nil
 }
 
+// Init creates the articles table if it doesn't exist. It should be called before any other method
+func (s *Storage) Init(ctx context.Context) error {
+	query := `CREATE TABLE IF NOT EXISTS articles (url TEXT, user_name TEXT)`
+
+	_, err := s.db.ExecContext(ctx, query)
+	if err != nil {
+		return fmt.Errorf("failed to create table: %w", err)
+	}
+
+	return nil
+}
+
 // Save saves an article to the database
 func (s *Storage) Save(ctx context.Context, a *storage.Article) error {
 	query := `INSERT INTO articles (url, user_name) VALUES (?,?)`
@@ -66,4 +78,18 @@ func (s *Storage) Remove(ctx context.Context, article *storage.Article) error {
 	}
 
 	return nil
+}
+
+// IsExists checks if an article exists in the database
+func (s *Storage) IsExists(ctx context.Context, article *storage.Article) (bool, error) {
+	query := `SELECT COUNT(*) FROM articles WHERE url = ? AND user_name = ?`
+
+	var count int
+
+	err := s.db.QueryRowContext(ctx, query, article.URL, article.UserName).Scan(&count)
+	if err != nil {
+		return false, fmt.Errorf("failed to check if article exists: %w", err)
+	}
+
+	return count > 0, nil
 }

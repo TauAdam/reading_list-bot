@@ -1,24 +1,33 @@
 package main
 
 import (
+	"context"
 	"flag"
 	telegramClient "github.com/tauadam/reading_list-bot/clients/telegram"
 	event_consumer "github.com/tauadam/reading_list-bot/consumer/event-consumer"
 	"github.com/tauadam/reading_list-bot/events/telegram"
-	file_based "github.com/tauadam/reading_list-bot/storage/file-based"
+	"github.com/tauadam/reading_list-bot/storage/sqlite"
 	"log"
 )
 
 const (
 	telegramApiHost = "https://api.telegram.org"
 	PathToStorage   = "local-storage"
+	PathToSqliteDb  = "db/sqlite"
 	BatchSize       = 100
 )
 
 func main() {
 	tgClient := telegramClient.New(telegramApiHost, mustToken())
 
-	localStorage := file_based.New(PathToStorage)
+	//localStorage := file_based.New(PathToStorage)
+
+	sqliteStorage, err := sqlite.New(PathToSqliteDb)
+	if err != nil {
+		log.Fatalf("failed to create sqlite storage: %v", err)
+	}
+
+	sqliteStorage.Init(context.TODO())
 
 	eventsProcessor := telegram.New(tgClient, localStorage)
 
