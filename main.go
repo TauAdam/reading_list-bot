@@ -13,11 +13,12 @@ import (
 const (
 	telegramApiHost = "https://api.telegram.org"
 	PathToStorage   = "local-storage"
-	PathToSqliteDb  = "db/sqlite"
+	PathToSqliteDb  = "database/sqlite.db"
 	BatchSize       = 100
 )
 
 func main() {
+	flag.Parse()
 	tgClient := telegramClient.New(telegramApiHost, mustToken())
 
 	//localStorage := file_based.New(PathToStorage)
@@ -27,9 +28,11 @@ func main() {
 		log.Fatalf("failed to create sqlite storage: %v", err)
 	}
 
-	sqliteStorage.Init(context.TODO())
+	if err := sqliteStorage.Init(context.TODO()); err != nil {
+		log.Fatalf("failed to init sqlite storage: %v", err)
+	}
 
-	eventsProcessor := telegram.New(tgClient, localStorage)
+	eventsProcessor := telegram.New(tgClient, sqliteStorage)
 
 	log.Printf("program running")
 

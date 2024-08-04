@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"crypto/sha1"
 	"errors"
 	"fmt"
@@ -11,10 +12,10 @@ import (
 var ErrArticleNotFound = errors.New("no saved articles")
 
 type Storage interface {
-	Save(a *Article) error
-	PickRandom(userName string) (*Article, error)
-	Remove(a *Article) error
-	IsExist(a *Article) (bool, error)
+	Save(ctx context.Context, a *Article) error
+	PickRandom(ctx context.Context, userName string) (*Article, error)
+	Remove(ctx context.Context, a *Article) error
+	IsExist(ctx context.Context, a *Article) (bool, error)
 }
 
 type Article struct {

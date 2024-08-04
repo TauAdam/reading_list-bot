@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/tauadam/reading_list-bot/storage"
 )
 
@@ -80,8 +81,8 @@ func (s *Storage) Remove(ctx context.Context, article *storage.Article) error {
 	return nil
 }
 
-// IsExists checks if an article exists in the database
-func (s *Storage) IsExists(ctx context.Context, article *storage.Article) (bool, error) {
+// IsExist checks if an article exists in the database
+func (s *Storage) IsExist(ctx context.Context, article *storage.Article) (bool, error) {
 	query := `SELECT COUNT(*) FROM articles WHERE url = ? AND user_name = ?`
 
 	var count int

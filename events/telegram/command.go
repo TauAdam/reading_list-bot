@@ -1,6 +1,7 @@
 package telegram
 
 import (
+	"context"
 	"errors"
 	"github.com/tauadam/reading_list-bot/clients/telegram"
 	"github.com/tauadam/reading_list-bot/lib/utils"
@@ -59,7 +60,7 @@ func (p *Processor) handleSave(chatID int, articleURL string, userName string) (
 		UserName: userName,
 	}
 
-	isExists, err := p.storage.IsExist(article)
+	isExists, err := p.storage.IsExist(context.Background(), article)
 	if err != nil {
 		return err
 	}
@@ -68,7 +69,7 @@ func (p *Processor) handleSave(chatID int, articleURL string, userName string) (
 		return sendMsg(msgAlreadyExists)
 	}
 
-	if err = p.storage.Save(article); err != nil {
+	if err = p.storage.Save(context.Background(), article); err != nil {
 		return err
 	}
 
@@ -90,7 +91,7 @@ func (p *Processor) handleRandom(chatID int, userName string) (err error) {
 
 	sendMsg := NewMessageSender(chatID, p.tg)
 
-	article, err := p.storage.PickRandom(userName)
+	article, err := p.storage.PickRandom(context.Background(), userName)
 	if err != nil && !errors.Is(err, storage.ErrArticleNotFound) {
 		return err
 	}
@@ -103,7 +104,7 @@ func (p *Processor) handleRandom(chatID int, userName string) (err error) {
 		return err
 	}
 
-	return p.storage.Remove(article)
+	return p.storage.Remove(context.Background(), article)
 }
 
 func (p *Processor) handleHelp(chatID int) error {
