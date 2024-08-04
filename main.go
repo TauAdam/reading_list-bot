@@ -11,7 +11,7 @@ import (
 
 const (
 	telegramApiHost = "https://api.telegram.org"
-	PathToStorage   = "storage"
+	PathToStorage   = "local-storage"
 	BatchSize       = 100
 )
 
