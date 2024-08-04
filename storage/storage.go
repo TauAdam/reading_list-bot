@@ -22,6 +22,7 @@ type Article struct {
 	UserName string
 }
 
+// Hash returns a hash of the article
 func (a Article) Hash() (string, error) {
 	h := sha1.New()
 

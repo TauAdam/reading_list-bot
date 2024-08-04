@@ -31,6 +31,7 @@ func main() {
 	}
 }
 
+// mustToken returns a telegram bot token from the command line arguments
 func mustToken() string {
 	token := flag.String("tg-bot-token", "", "Telegram bot api token")
 

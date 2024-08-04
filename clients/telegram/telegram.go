@@ -28,6 +28,7 @@ func New(host, token string) *Client {
 
 }
 
+// Updates represents a telegram update
 func (c *Client) Updates(offset, limit int) ([]Update, error) {
 	queryMap := url.Values{}
 	queryMap.Add("offset", strconv.Itoa(offset))
@@ -58,6 +59,7 @@ func (c *Client) SendMessage(chatID int, text string) error {
 	return nil
 }
 
+// doRequest working under the hood of the Client to communicate with the telegram API
 func (c *Client) doRequest(method string, query url.Values) ([]byte, error) {
 	u := url.URL{
 		Scheme: "http",
