@@ -7,6 +7,7 @@ import (
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/tauadam/reading_list-bot/storage"
+	"os"
 )
 
 type Storage struct {
@@ -14,6 +15,16 @@ type Storage struct {
 }
 
 func New(path string) (*Storage, error) {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		file, err := os.Create(path)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create database file: %w", err)
+		}
+		if err := file.Close(); err != nil {
+			return nil, fmt.Errorf("failed to close database file: %w", err)
+		}
+	}
+
 	db, err := sql.Open("sqlite3", path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
@@ -52,14 +63,14 @@ func (s *Storage) Save(ctx context.Context, a *storage.Article) error {
 
 // PickRandom returns a random article from the database
 func (s *Storage) PickRandom(ctx context.Context, userName string) (*storage.Article, error) {
-	query := `SELECT articles FROM articles WHERE user_name = ? OR ORDER BY random() LIMIT 1`
+	query := `SELECT url FROM articles WHERE user_name = ? ORDER BY random() LIMIT 1`
 
 	var res string
 	err := s.db.QueryRowContext(ctx, query, userName).Scan(&res)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, storage.ErrArticleNotFound
+		}
 		return nil, fmt.Errorf("failed to pick random articles: %w", err)
 	}
 

@@ -1,6 +1,7 @@
 # Reading list bot 
 
 This is a simple bot that saves links to articles and books that you want to read later.
+It can pick random link from the list, so you don't get bored.
 
 ## Features
 - Save links to articles and books
@@ -12,7 +13,7 @@ This is a simple bot that saves links to articles and books that you want to rea
 - [x] Handle main commands: save, start, help, pick random
 - [x] Save links to articles and books
 - [x] Pick random link from the list
-- [ ] Finish sqlite storage
+- [x] Finish sqlite storage
 
 ## What package includes
 - Built in client for Telegram API

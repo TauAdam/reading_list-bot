@@ -29,7 +29,7 @@ func New(client *telegram.Client, storage storage.Storage) *Processor {
 func (p *Processor) Fetch(limit int) ([]events.Event, error) {
 	updates, err := p.tg.Updates(p.offset, limit)
 	if err != nil {
-		return nil, utils.Wrap("can't fetch updates", err)
+		return nil, utils.Wrap("failed to get updates", err)
 	}
 
 	if len(updates) == 0 {
@@ -93,18 +93,18 @@ func (p *Processor) Process(event events.Event) error {
 	case events.Message:
 		return p.processMessage(event)
 	default:
-		return utils.Wrap("can't process message", ErrUnknownEventType)
+		return utils.Wrap("failed to process message", ErrUnknownEventType)
 	}
 }
 
 func (p *Processor) processMessage(event events.Event) error {
 	meta, err := extractMeta(event)
 	if err != nil {
-		return utils.Wrap("can't extract meta info", err)
+		return utils.Wrap("failed to extract meta info", err)
 	}
 
 	if err := p.cmdRouter(event.Text, meta.ChatID, meta.UserName); err != nil {
-		return utils.Wrap("can't execute command", err)
+		return utils.Wrap("failed to execute command", err)
 	}
 
 	return nil
@@ -114,7 +114,7 @@ func (p *Processor) processMessage(event events.Event) error {
 func extractMeta(e events.Event) (Meta, error) {
 	res, ok := e.Meta.(Meta)
 	if !ok {
-		return Meta{}, utils.Wrap("can't extract meta info", ErrUnknownMetaType)
+		return Meta{}, utils.Wrap("failed to extract meta info", ErrUnknownMetaType)
 	}
 
 	return res, nil

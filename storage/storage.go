@@ -28,11 +28,11 @@ func (a Article) Hash() (string, error) {
 	h := sha1.New()
 
 	if _, err := io.WriteString(h, a.URL); err != nil {
-		return "", utils.Wrap("can't calc hash", err)
+		return "", utils.Wrap("failed to calc hash", err)
 	}
 
 	if _, err := io.WriteString(h, a.UserName); err != nil {
-		return "", utils.Wrap("can't calc hash", err)
+		return "", utils.Wrap("failed to calc hash", err)
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil

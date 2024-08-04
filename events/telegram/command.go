@@ -23,7 +23,8 @@ func (p *Processor) cmdRouter(text string, chatID int, userName string) error {
 	log.Printf("got new command: [%s] from %s", command, userName)
 
 	if isValidAddCmd(command) {
-		return p.handleSave(chatID, userName, command)
+		// fixed mistake where username and url swapped
+		return p.handleSave(chatID, command, userName)
 	}
 
 	switch command {
@@ -51,8 +52,6 @@ func isUrl(text string) bool {
 
 // handleSave saves data and send user status about operation
 func (p *Processor) handleSave(chatID int, articleURL string, userName string) (err error) {
-	defer func() { err = utils.Wrap("can't execute save operation", err) }()
-
 	sendMsg := NewMessageSender(chatID, p.tg)
 
 	article := &storage.Article{
@@ -62,7 +61,7 @@ func (p *Processor) handleSave(chatID int, articleURL string, userName string) (
 
 	isExists, err := p.storage.IsExist(context.Background(), article)
 	if err != nil {
-		return err
+		return utils.Wrap("failed to check if article exists", err)
 	}
 
 	if isExists {
@@ -70,11 +69,11 @@ func (p *Processor) handleSave(chatID int, articleURL string, userName string) (
 	}
 
 	if err = p.storage.Save(context.Background(), article); err != nil {
-		return err
+		return utils.Wrap("failed to save article", err)
 	}
 
 	if err := sendMsg(msgSuccessfullySaved); err != nil {
-		return err
+		return utils.Wrap("failed to send message", err)
 	}
 
 	return nil
@@ -86,9 +85,7 @@ func NewMessageSender(chatID int, tg *telegram.Client) func(string) error {
 	}
 }
 
-func (p *Processor) handleRandom(chatID int, userName string) (err error) {
-	defer func() { err = utils.Wrap("can't execute random operation", err) }()
-
+func (p *Processor) handleRandom(chatID int, userName string) error {
 	sendMsg := NewMessageSender(chatID, p.tg)
 
 	article, err := p.storage.PickRandom(context.Background(), userName)
@@ -101,7 +98,7 @@ func (p *Processor) handleRandom(chatID int, userName string) (err error) {
 	}
 
 	if err = sendMsg(article.URL); err != nil {
-		return err
+		return utils.Wrap("failed to send message", err)
 	}
 
 	return p.storage.Remove(context.Background(), article)
