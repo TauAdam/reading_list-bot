@@ -45,3 +45,5 @@ Data processing: The Processor processes the fetched data and stores it in the S
 Data consumption: The Consumer retrieves processed data from the Storage and sends it to users via the Client.
 Botfather interaction: The Client interacts with the Botfather to send messages to users.
   
+
+![Diagram](images.png)
