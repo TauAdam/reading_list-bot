@@ -85,6 +85,7 @@ func NewMessageSender(chatID int, tg *telegram.Client) func(string) error {
 	}
 }
 
+// handleRandom picks random article from storage layer, send it to user and handles errors
 func (p *Processor) handleRandom(chatID int, userName string) error {
 	sendMsg := NewMessageSender(chatID, p.tg)
 

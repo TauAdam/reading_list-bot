@@ -79,7 +79,10 @@ func (c *Client) doRequest(method string, query url.Values) ([]byte, error) {
 		return nil, utils.Wrap("could not send request", err)
 	}
 	defer func() {
-		resp.Body.Close()
+		err := resp.Body.Close()
+		if err != nil {
+			return
+		}
 	}()
 
 	body, err := io.ReadAll(resp.Body)

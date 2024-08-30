@@ -1,8 +1,11 @@
 This is a simple bot that saves links to articles and books that you want save for reading later.
 It can pick random link from the list, so you won't have to suffer with the choice.
 
-## Self hosting instructions
-
+## Self-hosting instructions
+- Download repository
+  ```shell
+  git clone https://github.com/TauAdam/reading_list-bot.git
+  ```
 - Install
     ```go
     go build -o=bin main.go
@@ -13,6 +16,12 @@ It can pick random link from the list, so you won't have to suffer with the choi
     ```
 - If you have goland, then you can configure, run it like this:
   ![img.png](img.png)
+
+> Note: you should get token from Botfather bot in telegram
+
+## Showcase
+
+![img.jpg](img.jpg)
 
 ## Features
 
