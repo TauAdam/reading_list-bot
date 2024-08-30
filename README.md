@@ -1,40 +1,47 @@
-# Reading list bot 
-
 This is a simple bot that saves links to articles and books that you want save for reading later.
 It can pick random link from the list, so you won't have to suffer with the choice.
 
-## Usage
-- clone repository 
-- install dependencies 
-- create bot with botfather, get token
-- set bot token with environment variable or flag
-- run main.go
-- send commands to bot
+## Self hosting instructions
+
+- Install
+    ```go
+    go build -o=bin main.go
+    ```
+- Execute with environment variable
+    ```bash
+    TELEGRAM_BOT_TOKEN=your_token ./bin
+    ```
+- If you have goland, then you can configure, run it like this:
+  ![img.png](img.png)
 
 ## Features
+
 - Save links to articles and books
 - Pick random link from the list
 - Start reading from the list
 - Help command
 
 ### Roadmap
+
 - [x] Handle main commands: save, start, help, pick random
 - [x] Save links to articles and books
 - [x] Pick random link from the database
 - [x] Finish sqlite storage
 
 ## What package includes
+
 - Built in client for Telegram API
 - Local disk storage
 - Sqlite storage
 
 ## Engineering practises
+
 - clean code
 - abstract interfaces
 - not depends on realization of messenger (Telegram in that case)
 - using context for canceling long operations
 
-## Components of application 
+## Components of application
 
 - main.go: The entry point of the application.
 - Event Processor: Handles incoming Telegram updates.
@@ -52,6 +59,5 @@ It can pick random link from the list, so you won't have to suffer with the choi
 - Data processing: The Processor processes the fetched data and stores it in the Storage.
 - Data consumption: The Consumer retrieves processed data from the Storage and sends it to users via the Client.
 - Botfather interaction: The Client interacts with the Botfather to send messages to users.
-  
 
 ![Diagram](images.png)
